@@ -27,6 +27,41 @@ fn todo_push<'a>(todos: &mut Vec<&'a Todo>, todo: &'a Todo) {
 // <https://doc.rust-lang.org/reference/lifetime-elision.html>
 // <https://doc.rust-lang.org/reference/trait-bounds.html#lifetime-bounds>
 
+// Lifetime Ellision rules allow the rust compiler to estimate lifetimes
+// of references.
+// Rule 1: Compiler assigns unique lifetime parameter to each reference of parameters 
+// of a function.
+// Example:
+// fn longest(x: &'1 str, y: &'2 str)
+//
+// Rule 2: If there is only one references parameter, all the returned references of
+// the function will have the same lifetime as that parameter.
+fn first_word(s: &String) -> &str {
+    let bytes = s.as_bytes();
+    for (i, &byte) in bytes.iter().enumerate() {
+        if byte == b' ' {
+            return &s[0..i];
+        }
+    }
+    &s
+}
+
+// Rule 3: If one of the multiple reference parameters is `&self`/`&mut self`, its
+// lifetime is assigned to all returned references.
+// Example:
+// impl Shape {
+//  fn new(&self) -> &Rect {
+//    &Rect {
+//      x: self.x * 2.0,
+//      y: self.y * 2.0
+//    }
+//  }
+// }
+// This code actually does not work, &Rect is expected to have same lifetime as
+// &self, but it does not. I am here trying to return a reference to an
+// temporary object.
+
+
 fn main() {
     let mut str1 = String::from("Hello");
     str1.push_str(" from Rust!!");
@@ -56,4 +91,7 @@ fn main() {
     todo_push(&mut todos, &todo3);
     todo_push(&mut todos, &todo4);
     println!("{:?}", todos);
+
+    let word = first_word(str2);
+    println!("{}", word);
 }
